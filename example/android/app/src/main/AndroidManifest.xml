@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.topfreelancerdeveloper.flutter_openvpn_example">
+    package="com.topfreelancerdeveloper.flutter_openvpn_example"
+    >
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -9,6 +10,7 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="flutter_openvpn_example"
         android:icon="@mipmap/ic_launcher">
+        
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

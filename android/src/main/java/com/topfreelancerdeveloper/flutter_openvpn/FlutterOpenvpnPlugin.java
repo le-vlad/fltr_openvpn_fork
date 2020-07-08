@@ -1,27 +1,51 @@
 package com.topfreelancerdeveloper.flutter_openvpn;
 
+import android.app.Activity;
+
 import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import xyz.oboloi.openvpn.OboloiVPN;
+import xyz.oboloi.openvpn.OnVPNStatusChangeListener;
 
 /** FlutterOpenvpnPlugin */
-public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler {
+
+enum VpnStatus {
+   ProfileLoaded("profileloaded") {
+   },
+  ProfileLoadFailed("profileloadfailed") {
+  },
+  VpnActivated("vpnactivated") {
+  },
+  VpnDisabled("vpndisabled") {
+  };
+   public String callMethod;
+   VpnStatus(String callMethod) {
+     this.callMethod = callMethod;
+   }
+}
+public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
+  private OboloiVPN vpn;
+  static private Activity activity;
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "flutter_openvpn");
     channel.setMethodCallHandler(this);
   }
+
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
   // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -35,19 +59,84 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler {
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_openvpn");
     channel.setMethodCallHandler(new FlutterOpenvpnPlugin());
+    activity = registrar.activity();
   }
 
   @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else {
-      result.notImplemented();
+  public void onMethodCall(@NonNull MethodCall call, final @NonNull Result result) {
+    try {
+      if (call.method.equals("getPlatformVersion")) {
+        result.success("Android " + android.os.Build.VERSION.RELEASE);
+      } else if (call.method.equals("init")) {
+        vpn = new OboloiVPN(activity,activity);
+        result.success(null);
+      } else if(call.method.equals("lunch")){
+        String config = call.argument("ovpnFileContent");
+        if(vpn == null) {
+          result.error("-1", "OpenVpnPlugin not initialized", null);
+          return;
+        }
+        if(config == null || config.isEmpty()){
+          result.error("-2", "Null or Empty Vpn Config", null);
+          return;
+        }
+        vpn.setOnVPNStatusChangeListener(new OnVPNStatusChangeListener() {
+          @Override
+          public void onProfileLoaded(boolean profileLoaded) {
+            channel.invokeMethod(profileLoaded ? VpnStatus.ProfileLoaded.callMethod : VpnStatus.ProfileLoadFailed.callMethod , null);
+            if(profileLoaded){ vpn.init(); result.success(null);}
+          }
+
+          @Override
+          public void onVPNStatusChanged(boolean vpnActivated) {
+            channel.invokeMethod(vpnActivated ? VpnStatus.VpnActivated.callMethod : VpnStatus.VpnDisabled.callMethod , null);
+          }
+        });
+        vpn.launchVPN(config);
+
+
+      }else if(call.method.equals("stop")){
+        vpn.init();
+        result.success(null);
+      }
+    }catch (Exception err){
+      result.error("-10",err.toString(),"UnExpected error");
     }
   }
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
+    new OboloiVPN(null,null).setOnVPNStatusChangeListener(new OnVPNStatusChangeListener() {
+      @Override
+      public void onProfileLoaded(boolean profileLoaded) {
+        
+      }
+
+      @Override
+      public void onVPNStatusChanged(boolean vpnActivated) {
+
+      }
+    });
+  }
+
+  @Override
+  public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    activity = binding.getActivity();
+  }
+
+  @Override
+  public void onDetachedFromActivityForConfigChanges() {
+
+  }
+
+  @Override
+  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+
+  }
+
+  @Override
+  public void onDetachedFromActivity() {
+
   }
 }
