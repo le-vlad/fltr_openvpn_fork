@@ -10,13 +10,17 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
     }
+
 }
 
 rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'https://jitpack.io' }
     }
+
+
 }
 
 apply plugin: 'com.android.library'
@@ -25,9 +29,18 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 22
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
     }
     lintOptions {
         disable 'InvalidPackage'
     }
+    dependencies {
+        implementation fileTree(dir: 'libs', include: '*.jar')
+        implementation 'com.github.Topfreelancerdeveloperr:flutter_openvpn_android_api:9f7dee8c2a'
+    }
+
 }
+
