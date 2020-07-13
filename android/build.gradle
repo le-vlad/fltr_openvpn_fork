@@ -30,15 +30,12 @@ android {
 
     defaultConfig {
         minSdkVersion 22
-        ndk {
-            abiFilters "armeabi-v7a"
-        }
+        
     }
     lintOptions {
         disable 'InvalidPackage'
     }
     dependencies {
-        implementation fileTree(dir: 'libs', include: '*.jar')
         implementation 'com.github.Topfreelancerdeveloperr:flutter_openvpn_android_api:9f7dee8c2a'
     }
 
