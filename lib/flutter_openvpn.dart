@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 typedef OnProfileStatusChanged = Function(bool isProfileLoaded);
 typedef OnVPNStatusChanged = Function(bool vpnActivated);
@@ -52,11 +53,19 @@ class FlutterOpenvpn {
   static Future<int> lunchVpn(
       String ovpnFileContents,
       OnProfileStatusChanged onProfileStatusChanged,
-      OnVPNStatusChanged onVPNStatusChanged) async {
+      OnVPNStatusChanged onVPNStatusChanged,
+      {DateTime expireAt}) async {
     _onProfileStatusChanged = onProfileStatusChanged;
     _onVPNStatusChanged = onVPNStatusChanged;
-    dynamic isLunched = await _channel.invokeMethod("lunch",
-        {'ovpnFileContent': ovpnFileContents}).catchError((error) => error);
+    dynamic isLunched = await _channel.invokeMethod(
+      "lunch",
+      {
+        'ovpnFileContent': ovpnFileContents,
+        'expireAt': expireAt == null
+            ? null
+            : DateFormat("yyyy-MM-dd HH:mm:ss").format(expireAt),
+      },
+    ).catchError((error) => error);
     if (isLunched == null) return 0;
     print((isLunched as PlatformException).message);
     return int.tryParse((isLunched as PlatformException).code);

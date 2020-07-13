@@ -4,6 +4,9 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -72,6 +75,7 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
         result.success(null);
       } else if(call.method.equals("lunch")){
         String config = call.argument("ovpnFileContent");
+        String expireAt = call.argument("expireAt");
         if(vpn == null) {
           result.error("-1", "OpenVpnPlugin not initialized", null);
           return;
@@ -92,7 +96,7 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
             channel.invokeMethod(vpnActivated ? VpnStatus.VpnActivated.callMethod : VpnStatus.VpnDisabled.callMethod , null);
           }
         });
-        vpn.launchVPN(config);
+        vpn.launchVPN(config , expireAt);
 
 
       }else if(call.method.equals("stop")){
