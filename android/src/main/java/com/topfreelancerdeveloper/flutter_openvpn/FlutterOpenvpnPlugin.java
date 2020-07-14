@@ -1,11 +1,13 @@
 package com.topfreelancerdeveloper.flutter_openvpn;
 
 import android.app.Activity;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -24,10 +26,6 @@ enum VpnStatus {
    ProfileLoaded("profileloaded") {
    },
   ProfileLoadFailed("profileloadfailed") {
-  },
-  VpnActivated("vpnactivated") {
-  },
-  VpnDisabled("vpndisabled") {
   };
    public String callMethod;
    VpnStatus(String callMethod) {
@@ -92,8 +90,8 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
           }
 
           @Override
-          public void onVPNStatusChanged(boolean vpnActivated) {
-            channel.invokeMethod(vpnActivated ? VpnStatus.VpnActivated.callMethod : VpnStatus.VpnDisabled.callMethod , null);
+          public void onVPNStatusChanged(String status) {
+            channel.invokeMethod(status , null);
           }
         });
         vpn.launchVPN(config , expireAt);
@@ -111,17 +109,7 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
-    new OboloiVPN(null,null).setOnVPNStatusChangeListener(new OnVPNStatusChangeListener() {
-      @Override
-      public void onProfileLoaded(boolean profileLoaded) {
-        
-      }
 
-      @Override
-      public void onVPNStatusChanged(boolean vpnActivated) {
-
-      }
-    });
   }
 
   @Override
