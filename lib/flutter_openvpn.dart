@@ -4,12 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 typedef OnProfileStatusChanged = Function(bool isProfileLoaded);
-typedef OnVPNStatusChanged = Function(bool vpnActivated);
+typedef OnVPNStatusChanged = Function(String status);
 
 const String _profileLoaded = "profileloaded";
 const String _profileLoadFailed = "profileloadfailed";
-const String _vpnActivated = "vpnactivated";
-const String _vpnDisabled = "vpndisabled";
 
 class FlutterOpenvpn {
   static const MethodChannel _channel = const MethodChannel('flutter_openvpn');
@@ -33,13 +31,8 @@ class FlutterOpenvpn {
           case _profileLoadFailed:
             _onProfileStatusChanged?.call(false);
             break;
-          case _vpnActivated:
-            _onVPNStatusChanged?.call(true);
-            break;
-          case _vpnDisabled:
-            _onVPNStatusChanged?.call(true);
-            break;
           default:
+            _onVPNStatusChanged?.call(call.method);
         }
         return null;
       });
