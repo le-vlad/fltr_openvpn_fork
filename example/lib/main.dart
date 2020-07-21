@@ -130,6 +130,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       );
+      Future.delayed(Duration(seconds: 10), () => FlutterOpenvpn.stopVPN());
     }
   }
 
