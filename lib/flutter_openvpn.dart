@@ -19,9 +19,12 @@ class FlutterOpenvpn {
     return version;
   }
 
-  static Future<bool> init() async {
-    dynamic isInited =
-        await _channel.invokeMethod("init").catchError((error) => error);
+  static Future<bool> init(
+      {String providerBundleIdentifier, String localizedDescription}) async {
+    dynamic isInited = await _channel.invokeMethod("init", {
+      'localizedDescription': localizedDescription,
+      'providerBundleIdentifier': providerBundleIdentifier,
+    }).catchError((error) => error);
     if (isInited == null) {
       _channel.setMethodCallHandler((call) {
         switch (call.method) {

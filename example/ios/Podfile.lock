@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_openvpn (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_openvpn (from `.symlinks/plugins/flutter_openvpn/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_openvpn:
+    :path: ".symlinks/plugins/flutter_openvpn/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_openvpn: 335293c5f1d77003967244406aa744da959f4aa8
+
+PODFILE CHECKSUM: 2609452b760cd11039b14039a86564367a3d8ab9
+
+COCOAPODS: 1.9.1
