@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OpenVPNAdapter",
+        "repositoryURL": "https://github.com/ss-abramchuk/OpenVPNAdapter.git",
+        "state": {
+          "branch": null,
+          "revision": "fb3604c237665dd89809c68e128cbf69893e0f17",
+          "version": "0.6.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
