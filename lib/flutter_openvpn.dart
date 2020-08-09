@@ -19,13 +19,13 @@ class FlutterOpenvpn {
     return version;
   }
 
-  static Future<bool> init(
+  static Future<dynamic> init(
       {String providerBundleIdentifier, String localizedDescription}) async {
     dynamic isInited = await _channel.invokeMethod("init", {
       'localizedDescription': localizedDescription,
       'providerBundleIdentifier': providerBundleIdentifier,
     }).catchError((error) => error);
-    if (isInited == null) {
+    if (isInited != null) {
       _channel.setMethodCallHandler((call) {
         switch (call.method) {
           case _profileLoaded:
@@ -39,10 +39,10 @@ class FlutterOpenvpn {
         }
         return null;
       });
-      return true;
+      return isInited;
     } else {
       print((isInited as PlatformException).message);
-      return false;
+      return null;
     }
   }
 

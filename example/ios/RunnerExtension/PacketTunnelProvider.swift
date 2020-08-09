@@ -1,6 +1,5 @@
 import NetworkExtension
 import OpenVPNAdapter
-import os
 
 // Extend NEPacketTunnelFlow to adopt OpenVPNAdapterPacketFlow protocol so that
 // `self.packetFlow` could be sent to `completionHandler` callback of OpenVPNAdapterDelegate
@@ -17,9 +16,24 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }()
 
     let vpnReachability = OpenVPNReachability()
+    var providerManager: NETunnelProviderManager!
 
     var startHandler: ((Error?) -> Void)?
     var stopHandler: (() -> Void)?
+    
+    func loadProviderManager(completion:@escaping (_ error : Error?) -> Void)  {
+        
+            NETunnelProviderManager.loadAllFromPreferences { (managers, error)  in
+                if error == nil {
+                    self.providerManager = managers?.first ?? NETunnelProviderManager()
+                    
+                    completion(nil)
+                } else {
+                    completion(error)
+                }
+            }
+        
+    }
 
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
         // There are many ways to provide OpenVPN settings to the tunnel provider. For instance,
@@ -93,31 +107,42 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             guard status == .reachableViaWiFi else { return }
             self?.vpnAdapter.reconnect(afterTimeInterval: 5)
         }
-
-        // Establish connection and wait for .connected event
-//        let connectedDate = Date()
-//        if expireAt != nil {
-//            var expireAtDate:Date!;
-//            let formatter = DateFormatter();
-//            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss";
-//            formatter.timeZone = TimeZone(abbreviation: "UTC");
-//            expireAtDate = formatter.date(from: String(decoding: expireAt!, as: UTF8.self));
-//            let diffComponents = Calendar.current.dateComponents([.second], from: connectedDate, to: expireAtDate)
-//            var diffSeconds = diffComponents.second
-//            diffSeconds = diffSeconds! + 60
-//            if diffSeconds! < 0 {
-//                return;
-//            }
-//            os_log("foo: %@", diffSeconds!)
-//            Timer.scheduledTimer(withTimeInterval: TimeInterval(diffSeconds!), repeats: false) { (timer : Timer) in
-//                self.stopTunnel(with: NEProviderStopReason.idleTimeout) {
-//                    
-//                }
-//            }
-//        }
+        
+        if expireAt != nil {
+            
+            var expireAtDate:Date!;
+            let formatter = DateFormatter();
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss";
+            let expireAtString = String(decoding: expireAt!, as: UTF8.self)
+            
+            expireAtDate = formatter.date(from: expireAtString);
+            var stopInSeconds = 10 * 60.0;
+            
+            if expireAtDate.timeIntervalSinceNow > 0.0 {
+                stopInSeconds = expireAtDate.timeIntervalSinceNow
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(stopInSeconds)) {
+                self.stopVPN()
+            }
+            
+            
+            
+        }
         
         startHandler = completionHandler
         vpnAdapter.connect(using: packetFlow)
+    }
+    
+    @objc func stopVPN() {
+        loadProviderManager { (err :Error?) in
+            if err == nil {
+                self.providerManager.connection.stopVPNTunnel();
+            }else{
+                //stopTunnel(with: .none) {
+                //
+                //}
+            }
+        }
     }
 
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
@@ -205,4 +230,5 @@ extension PacketTunnelProvider: OpenVPNAdapterDelegate {
     }
 
 }
+
 
