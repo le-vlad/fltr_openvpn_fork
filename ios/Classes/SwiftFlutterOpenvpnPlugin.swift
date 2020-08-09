@@ -33,7 +33,10 @@ public class SwiftFlutterOpenvpnPlugin: NSObject, FlutterPlugin {
         SwiftFlutterOpenvpnPlugin.utils.channel = SwiftFlutterOpenvpnPlugin.channel
          SwiftFlutterOpenvpnPlugin.utils.loadProviderManager { (err : Error?) in
             if err == nil {
-                result(nil)
+                var args =  [String: Any]()
+                args["expireAt"] = SwiftFlutterOpenvpnPlugin.utils.currentExpireAt();
+                args["currentStatus"] = SwiftFlutterOpenvpnPlugin.utils.currentStatus();
+                result(args)
             }else {
                 result(FlutterError(code: "-4", message: err.debugDescription, details: err?.localizedDescription));
             }

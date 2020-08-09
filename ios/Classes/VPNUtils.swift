@@ -54,6 +54,47 @@ class VPNUtils {
             break;
         }
     }
+    func onVpnStatusChangedString(notification : NEVPNStatus) -> String?{
+        switch notification {
+        case NEVPNStatus.connected:
+                return "CONNECTED";
+            
+            case NEVPNStatus.connecting:
+                return "CONNECTING";
+            
+            case NEVPNStatus.disconnected:
+                return "DISCONNECTED";
+           
+            case NEVPNStatus.disconnecting:
+                return "DISCONNECTING";
+            
+            case NEVPNStatus.invalid:
+                return "";
+            
+            case NEVPNStatus.reasserting:
+                return "REASSERTING";
+            
+        default:
+            return "";
+            
+        }
+    }
+    func currentExpireAt() -> String? {
+        do {
+            let protocolConfiguration = try self.providerManager.protocolConfiguration as? NETunnelProviderProtocol;
+            let
+            providerConfiguration =  protocolConfiguration?.providerConfiguration
+            if providerConfiguration == nil {return nil}
+            let expireAt : Data? = providerConfiguration!["expireAt"] as? Data? ?? nil
+            return try String(data: expireAt!, encoding: .utf8)
+        } catch {
+            return nil
+        }
+    }
+    func currentStatus() -> String? {
+        
+        return onVpnStatusChangedString(notification: self.providerManager.connection.status);
+    }
 
     func configureVPN(ovpnFileContent: String?, expireAt : String?,completion:@escaping (_ error : Error?) -> Void) {
         let configData = ovpnFileContent

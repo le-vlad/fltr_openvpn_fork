@@ -12,6 +12,8 @@ import java.util.HashMap;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.embedding.engine.plugins.service.ServiceAware;
+import io.flutter.embedding.engine.plugins.service.ServicePluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -32,7 +34,7 @@ enum VpnStatus {
      this.callMethod = callMethod;
    }
 }
-public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
+public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware, ServiceAware {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -109,7 +111,6 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
-
   }
 
   @Override
@@ -124,11 +125,21 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-
+    activity = binding.getActivity();
   }
 
   @Override
   public void onDetachedFromActivity() {
+
+  }
+
+  @Override
+  public void onAttachedToService(@NonNull ServicePluginBinding binding) {
+
+  }
+
+  @Override
+  public void onDetachedFromService() {
 
   }
 }
