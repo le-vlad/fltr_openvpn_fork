@@ -1,8 +1,7 @@
 name: flutter_openvpn
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+description: A new Flutter plugin that uses OpenVpn.
+version: 0.1.0
+homepage: https://gitlab.com/topfreelancerdeveloper/flutter_openvpn.git
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
