@@ -79,14 +79,14 @@ pod 'OpenVPNAdapter', :git => 'https://github.com/ss-abramchuk/OpenVPNAdapter.gi
 3. Add both "Network Extension" and "App Groups" capabalities
 4. Select ONLY "Packet Tunnel" form newly created Network Extension menu.
 5. Make sure your Bundle identifier is checked in App Groups.
-View [This Screenshot]() for visual Guide
+6. View [This Screenshot](https://gitlab.com/topfreelancerdeveloper/flutter_openvpn/-/blob/master/screenshots/add_runner_entitlements.png) for visual Guide
 - Add Network Extension Target
 1. Below Runner target click on "+" button to add new target
 2. Search for "Network Extension" in newly opened page and click on next
 3. Give it a name(Without space) and make sure to select Swift as Language and Packet Tunnel as Provider Type.
 4. Click on finish and agree to any message relating to "Activating Extension"
 5. Repeat "Add VPN Entitlements" for newly created target as well
-View [This Screenshot]() for visual Guide
+6. View [This Screenshot](https://gitlab.com/topfreelancerdeveloper/flutter_openvpn/-/blob/master/screenshots/add_vpn_extension.png) for visual Guide
 - Change minimum platform target to iOS 9.0 :
 1. In Runner target -> Deployment Info -> change Target to iOS 9.0
 2. Repeat step 2 for your VPN Extension Target as well
@@ -96,13 +96,13 @@ View [This Screenshot]() for visual Guide
 3. In Frameworks and Libraries section click on + button
 4. Search for "OpenVPNAdapter.framework" and click on Add
 5. Select "Do Not Embed" in OpenVPNAdapter.framework Embed Options
-View [This Screenshot]() for visual Guide
+6. View [This Screenshot](https://gitlab.com/topfreelancerdeveloper/flutter_openvpn/-/blob/master/screenshots/add_openvpnadpter_dependency.png) for visual Guide
 - Disable Bitcode
 1. In Vpn Extension Target -> Build Settings
 2. Search for "Bitcode" and set it to NO
 - Add code to PacketTunnelProvider
 1. Open VPNExtension folder/PacketTunnelProvider.swift in xcode.
-2. Replace all code with [this]() and save
+2. Replace all code with [this](https://gitlab.com/topfreelancerdeveloper/flutter_openvpn/-/blob/master/example/ios/RunnerExtension/PacketTunnelProvider.swift) and save
 ### Dart/Flutter integration
 - Initilize plugin
 ```dart
@@ -117,7 +117,7 @@ FlutterOpenvpn.init(
  returns null if failed
 */
 ```
-View [this]() for more info on VPN status Strings
+View [this](https://gitlab.com/topfreelancerdeveloper/flutter_openvpn/-/blob/master/ios/Classes/VPNUtils.swift) for more info on VPN status Strings
 - Add VPN Profile and connect
 ```dart
 FlutterOpenvpn.lunchVpn(
@@ -132,7 +132,7 @@ FlutterOpenvpn.lunchVpn(
 ### Android
 . Recently I discovered an issue with plugin not working with appbundles
 . If you want to publish to play store use apks
-. view this [issue]() to stay updated on the matter  
+. view this [issue](https://gitlab.com/topfreelancerdeveloper/flutter_openvpn/-/issues/1) to stay updated on the matter  
 ### iOS
 . View [Apple Guidelines](https://developer.apple.com/app-store/review/guidelines/#vpn-apps) Relating to VPN
 . This plugin DOES use Encryption BUT, It uses Exempt Encryptions 
