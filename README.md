@@ -9,7 +9,7 @@ Add this to your package's pubspec.yaml file:
 
 ```dart
 dependencies:
-  flutter_openvpn: ^0.1.0
+  flutter_openvpn: ^0.1.1
 
 ```
 

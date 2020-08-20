@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
+import de.blinkt.openvpn.core.OpenVPNService;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -72,7 +73,10 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
         result.success("Android " + android.os.Build.VERSION.RELEASE);
       } else if (call.method.equals("init")) {
         vpn = new OboloiVPN(activity,activity);
-        result.success(null);
+        HashMap<String,String> response = new HashMap<>();
+        response.put("currentStatus" , OpenVPNService.getStatus());
+        response.put("expireAt" , OpenVPNService.expireAt);
+        result.success(response);
       } else if(call.method.equals("lunch")){
         String config = call.argument("ovpnFileContent");
         String expireAt = call.argument("expireAt");

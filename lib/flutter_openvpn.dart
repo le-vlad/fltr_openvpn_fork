@@ -3,7 +3,15 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+/// Track vpn profile status.
 typedef OnProfileStatusChanged = Function(bool isProfileLoaded);
+
+/// Track Vpn status.
+///
+/// Status strings are but not limited to:
+/// "CONNECTING", "CONNECTED", "DISCONNECTING", "DISCONNECTED", "INVALID", "REASSERING", "AUTH", ...
+/// print status to get full insight.
+/// status might change depending on platform.
 typedef OnVPNStatusChanged = Function(String status);
 
 const String _profileLoaded = "profileloaded";
@@ -14,18 +22,28 @@ class FlutterOpenvpn {
   static OnProfileStatusChanged _onProfileStatusChanged;
   static OnVPNStatusChanged _onVPNStatusChanged;
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-
+  /// Initialize plugin.
+  ///
+  /// Must be called before any use.
+  ///
+  /// localizedDescription and providerBundleIdentifier is only required on iOS.
+  ///
+  /// localizedDescription : Name of vpn profile in settings.
+  ///
+  /// providerBundleIdentifier : Bundle id of your vpn extension.
+  ///
+  /// returns {"currentStatus" : "VPN_CURRENT_STATUS",
+  ///
+  /// "expireAt" : "VPN_EXPIRE_DATE_STRING_IN_FORMAT(yyyy-MM-dd HH:mm:ss)",} if successful
+  ///
+  ///  returns null if failed
   static Future<dynamic> init(
       {String providerBundleIdentifier, String localizedDescription}) async {
     dynamic isInited = await _channel.invokeMethod("init", {
       'localizedDescription': localizedDescription,
       'providerBundleIdentifier': providerBundleIdentifier,
     }).catchError((error) => error);
-    if (isInited != null) {
+    if (!(isInited is PlatformException) || isInited == null) {
       _channel.setMethodCallHandler((call) {
         switch (call.method) {
           case _profileLoaded:
@@ -41,11 +59,17 @@ class FlutterOpenvpn {
       });
       return isInited;
     } else {
+      print('OpenVPN Initilization failed');
       print((isInited as PlatformException).message);
+      print((isInited as PlatformException).details);
       return null;
     }
   }
 
+  /// Load profile and start connecting.
+  ///
+  /// if expireAt is provided
+  /// Vpn session stops itself at given date.
   static Future<int> lunchVpn(
       String ovpnFileContents,
       OnProfileStatusChanged onProfileStatusChanged,
@@ -67,6 +91,7 @@ class FlutterOpenvpn {
     return int.tryParse((isLunched as PlatformException).code);
   }
 
+  /// stops any connected session.
   static Future<void> stopVPN() async {
     await _channel.invokeMethod("stop");
   }
