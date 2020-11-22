@@ -96,14 +96,14 @@ class VPNUtils {
         return onVpnStatusChangedString(notification: self.providerManager.connection.status);
     }
 
-    func configureVPN(ovpnFileContent: String?, expireAt : String?,completion:@escaping (_ error : Error?) -> Void) {
+    func configureVPN(ovpnFileContent: String?, expireAt : String?,user : String?,pass : String?,completion:@escaping (_ error : Error?) -> Void) {
         let configData = ovpnFileContent
       self.providerManager?.loadFromPreferences { error in
          if error == nil {
             let tunnelProtocol = NETunnelProviderProtocol()
             tunnelProtocol.serverAddress = ""
             tunnelProtocol.providerBundleIdentifier = self.providerBundleIdentifier
-            tunnelProtocol.providerConfiguration = ["ovpn": configData?.data(using: .utf8), "expireAt" : expireAt?.data(using: .utf8)]
+            tunnelProtocol.providerConfiguration = ["ovpn": configData?.data(using: .utf8), "expireAt" : expireAt?.data(using: .utf8),"user" : user?.data(using: .utf8),"pass" : pass?.data(using: .utf8)]
             tunnelProtocol.disconnectOnSleep = false
             self.providerManager.protocolConfiguration = tunnelProtocol
             self.providerManager.localizedDescription = self.localizedDescription // the title of the VPN profile which will appear on Settings

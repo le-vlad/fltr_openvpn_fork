@@ -20,8 +20,9 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import xyz.oboloi.openvpn.OboloiVPN;
-import xyz.oboloi.openvpn.OnVPNStatusChangeListener;
+import de.blinkt.openvpn.OboloiVPN;
+import de.blinkt.openvpn.onPermissionChanged;
+import de.blinkt.openvpn.OnVPNStatusChangeListener;
 
 /** FlutterOpenvpnPlugin */
 
@@ -41,8 +42,11 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
-  private OboloiVPN vpn;
+  private static  OboloiVPN vpn;
   static private Activity activity;
+  public static void setPermission(boolean permit) {
+    if(vpn != null) vpn.onPermissionChanged(permit);
+  }
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -72,14 +76,16 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
       if (call.method.equals("getPlatformVersion")) {
         result.success("Android " + android.os.Build.VERSION.RELEASE);
       } else if (call.method.equals("init")) {
-        vpn = new OboloiVPN(activity,activity);
+        vpn = new OboloiVPN(activity);
         HashMap<String,String> response = new HashMap<>();
         response.put("currentStatus" , OpenVPNService.getStatus());
-        response.put("expireAt" , OpenVPNService.expireAt);
+        response.put("expireAt" , OpenVPNService.getExpireAt());
         result.success(response);
       } else if(call.method.equals("lunch")){
         String config = call.argument("ovpnFileContent");
         String expireAt = call.argument("expireAt");
+        String user = call.argument("user");
+        String pass = call.argument("pass");
         if(vpn == null) {
           result.error("-1", "OpenVpnPlugin not initialized", null);
           return;
@@ -99,8 +105,18 @@ public class FlutterOpenvpnPlugin implements FlutterPlugin, MethodCallHandler, A
           public void onVPNStatusChanged(String status) {
             channel.invokeMethod(status , null);
           }
+
+          @Override
+          public void onConnectionStatusChanged(String duration , String  lastPacketRecieve , String byteIn , String byteOut) {
+            HashMap<String,String> response = new HashMap<>();
+            response.put("duration" ,duration);
+            response.put("lastPacketRecieve" , lastPacketRecieve);
+            response.put("byteIn" , byteIn);
+            response.put("byteOut" , byteOut);
+            channel.invokeMethod("connectionUpdate" , response);
+          }
         });
-        vpn.launchVPN(config , expireAt);
+        vpn.launchVPN(config , expireAt, user, pass);
 
 
       }else if(call.method.equals("stop")){

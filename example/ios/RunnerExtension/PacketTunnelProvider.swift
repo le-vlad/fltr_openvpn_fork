@@ -11,7 +11,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     lazy var vpnAdapter: OpenVPNAdapter = {
         let adapter = OpenVPNAdapter()
         adapter.delegate = self
-
         return adapter
     }()
 
@@ -56,6 +55,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             fatalError()
         }
         let expireAt : Data? = providerConfiguration["expireAt"] as? Data? ?? nil
+        let user : Data? = providerConfiguration["user"] as? Data? ?? nil
+        let pass : Data? = providerConfiguration["pass"] as? Data? ?? nil
         
 
         let configuration = OpenVPNConfiguration()
@@ -66,31 +67,28 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         // configuration.tunPersist = true
 
         // Apply OpenVPN configuration
-        let properties: OpenVPNProperties
+        let properties: OpenVPNConfigurationEvaluation
         do {
             properties = try vpnAdapter.apply(configuration: configuration)
         } catch {
             completionHandler(error)
             return
         }
+        let userString = String(decoding: user!, as: UTF8.self)
+        let passString = String(decoding: pass!, as: UTF8.self)
 
         // Provide credentials if needed
-        if !properties.autologin {
+      
             // If your VPN configuration requires user credentials you can provide them by
             // `protocolConfiguration.username` and `protocolConfiguration.passwordReference`
             // properties. It is recommended to use persistent keychain reference to a keychain
             // item containing the password.
 
-            guard let username: String = protocolConfiguration.username else {
-                fatalError()
-            }
-
-            // Retrieve a password from the keychain
-            let password: String = "1234"
+           
 
             let credentials = OpenVPNCredentials()
-            credentials.username = username
-            credentials.password = password
+            credentials.username = userString
+            credentials.password = passString
 
             do {
                 try vpnAdapter.provide(credentials: credentials)
@@ -98,7 +96,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
                 completionHandler(error)
                 return
             }
-        }
+        
 
         // Checking reachability. In some cases after switching from cellular to
         // WiFi the adapter still uses cellular data. Changing reachability forces
@@ -199,6 +197,22 @@ extension PacketTunnelProvider: OpenVPNAdapterDelegate {
 
         case .reconnecting:
             reasserting = true
+        case .info:
+            var toSave = ""
+            let formatter = DateFormatter();
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss";
+            if openVPNAdapter.transportStatistics.lastPacketReceived != nil{
+                toSave += formatter.string(from: openVPNAdapter.transportStatistics.lastPacketReceived!)
+            }
+            toSave+="_"
+            toSave += String(openVPNAdapter.transportStatistics.packetsIn)
+            toSave+="_"
+            toSave += String(openVPNAdapter.transportStatistics.bytesIn)
+            toSave+="_"
+            toSave += String(openVPNAdapter.transportStatistics.bytesOut)
+            
+            
+            UserDefaults.setValue(toSave, forKey: "iosVpnStats")
 
         default:
             break
@@ -230,5 +244,4 @@ extension PacketTunnelProvider: OpenVPNAdapterDelegate {
     }
 
 }
-
 

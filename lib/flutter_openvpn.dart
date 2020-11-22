@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+typedef OnConnectionStatusChanged = Function(
+    String duration, String lastPacketRecieve, String byteIn, String byteOut);
 
 /// Track vpn profile status.
 typedef OnProfileStatusChanged = Function(bool isProfileLoaded);
@@ -16,11 +20,14 @@ typedef OnVPNStatusChanged = Function(String status);
 
 const String _profileLoaded = "profileloaded";
 const String _profileLoadFailed = "profileloadfailed";
+const String _connectionUpdate = 'connectionUpdate';
 
 class FlutterOpenvpn {
   static const MethodChannel _channel = const MethodChannel('flutter_openvpn');
   static OnProfileStatusChanged _onProfileStatusChanged;
   static OnVPNStatusChanged _onVPNStatusChanged;
+  static OnConnectionStatusChanged _onConnectionStatusChanged;
+  static bool _isSharedPrefsCronjobRunning = false;
 
   /// Initialize plugin.
   ///
@@ -44,8 +51,28 @@ class FlutterOpenvpn {
       'providerBundleIdentifier': providerBundleIdentifier,
     }).catchError((error) => error);
     if (!(isInited is PlatformException) || isInited == null) {
+      if (_isSharedPrefsCronjobRunning == false) {
+        Future.doWhile(() async {
+          var instance = await SharedPreferences.getInstance();
+          if (instance.containsKey('iosVpnStats')) {
+            List<String> split = instance.getString('iosVpnStats')?.split('_');
+            _onConnectionStatusChanged?.call(
+                split[0], split[1], split[2], split[3]);
+          }
+          await Future.delayed(Duration(seconds: 1));
+          return true;
+        });
+        _isSharedPrefsCronjobRunning = true;
+      }
       _channel.setMethodCallHandler((call) {
         switch (call.method) {
+          case _connectionUpdate:
+            _onConnectionStatusChanged?.call(
+                call.arguments['duration'],
+                call.arguments['lastPacketRecieve'],
+                call.arguments['byteIn'],
+                call.arguments['byteOut']);
+            break;
           case _profileLoaded:
             _onProfileStatusChanged?.call(true);
             break;
@@ -71,16 +98,23 @@ class FlutterOpenvpn {
   /// if expireAt is provided
   /// Vpn session stops itself at given date.
   static Future<int> lunchVpn(
-      String ovpnFileContents,
-      OnProfileStatusChanged onProfileStatusChanged,
-      OnVPNStatusChanged onVPNStatusChanged,
-      {DateTime expireAt}) async {
+    String ovpnFileContents,
+    OnProfileStatusChanged onProfileStatusChanged,
+    OnVPNStatusChanged onVPNStatusChanged, {
+    DateTime expireAt,
+    String user = '',
+    String pass = '',
+    OnConnectionStatusChanged onConnectionStatusChanged,
+  }) async {
     _onProfileStatusChanged = onProfileStatusChanged;
     _onVPNStatusChanged = onVPNStatusChanged;
+    _onConnectionStatusChanged = onConnectionStatusChanged;
     dynamic isLunched = await _channel.invokeMethod(
       "lunch",
       {
         'ovpnFileContent': ovpnFileContents,
+        'user': user,
+        'pass': pass,
         'expireAt': expireAt == null
             ? null
             : DateFormat("yyyy-MM-dd HH:mm:ss").format(expireAt),

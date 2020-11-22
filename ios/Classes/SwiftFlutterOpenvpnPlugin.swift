@@ -45,12 +45,14 @@ public class SwiftFlutterOpenvpnPlugin: NSObject, FlutterPlugin {
         if call.method == "lunch" {
             let ovpn: String? = (call.arguments as? [String: Any])?["ovpnFileContent"] as? String
             let expireAt: String? = (call.arguments as? [String: Any])?["expireAt"] as? String
+            let user: String? = (call.arguments as? [String: Any])?["user"] as? String
+            let pass: String? = (call.arguments as? [String: Any])?["pass"] as? String
             if ovpn == nil {
                 result(FlutterError(code: "-1", message: "ovpn content empty or null", details: nil));
                 return;
             }
             
-            SwiftFlutterOpenvpnPlugin.utils.configureVPN(ovpnFileContent: ovpn, expireAt: expireAt,completion: { (success : Error?) -> Void in
+            SwiftFlutterOpenvpnPlugin.utils.configureVPN(ovpnFileContent: ovpn, expireAt: expireAt, user: user, pass : pass,completion: { (success : Error?) -> Void in
 
                 
                 if success == nil {

@@ -18,6 +18,10 @@ class MyApp extends StatefulWidget {
       (vpnActivated) {
         print('vpnActivated : $vpnActivated');
       },
+      user: 'user',
+      pass: 'pass',
+      onConnectionStatusChanged:
+          (duration, lastPacketRecieve, byteIn, byteOut) => print(byteIn),
       expireAt: DateTime.now().add(
         Duration(
           seconds: 180,
