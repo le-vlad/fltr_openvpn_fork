@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   intl: ^0.16.1
-  shared_preferences: ^0.5.8
+  shared_preferences: ^2.0.9
 
 dev_dependencies:
   flutter_test:
